@@ -13,6 +13,7 @@ package erod
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"github.com/energye/energy/v2/cef"
 	"github.com/energye/energy/v2/consts"
 	engJSON "github.com/energye/energy/v2/pkgs/json"
@@ -44,7 +45,6 @@ type OnBeforeDownload func(suggestedName string) (downloadPath string, showDialo
 // Energy Devtools message processing structure for rod extension encapsulation
 type Energy struct {
 	rodBrowser      *rod.Browser
-	chromium        cef.IChromium
 	chromiumBrowser cef.ICEFChromiumBrowser
 	window          cef.IBrowserWindow
 	targetId        proto.TargetTargetID
@@ -80,7 +80,6 @@ func NewEnergyChromium(owner lcl.IWinControl, config *cef.TCefChromiumConfig) *E
 	m.rodBrowser.Client(m)
 	m.chromiumBrowser = cef.NewChromiumBrowser(owner, config)
 	m.chromiumBrowser.RegisterDefaultEvent()
-	m.chromium = m.chromiumBrowser.Chromium()
 	m.listen()
 	return m
 }
@@ -95,8 +94,8 @@ func NewEnergyWindow(config *cef.TCefChromiumConfig, windowProperty cef.WindowPr
 	m.rodBrowser = rod.New()
 	m.rodBrowser.Client(m)
 	m.window = cef.NewBrowserWindow(config, windowProperty, owner)
+	m.chromiumBrowser = m.window.ChromiumBrowser()
 	m.window.EnableAllDefaultEvent()
-	m.chromium = m.window.Chromium()
 	m.listen()
 	return m
 }
@@ -112,9 +111,10 @@ func ReadData(data uintptr, count uint32) []byte {
 	return result
 }
 
-// Chromium return current chromium instance
-func (m *Energy) Chromium() cef.IChromium {
-	return m.chromium
+func CheckError(err error) {
+	if err != nil {
+		panic(err)
+	}
 }
 
 // SetOnBeforePopup energy rod popup callback
@@ -140,14 +140,14 @@ func (m *Energy) SetOnDevToolsRawMessage(fn OnDevToolsRawMessage) {
 // TargetInfo Return current target info
 func (m *Energy) TargetInfo() *proto.TargetTargetInfo {
 	result, err := proto.TargetGetTargetInfo{TargetID: m.targetId}.Call(m)
-	utils.E(err)
+	CheckError(err)
 	return result.TargetInfo
 }
 
 // Targets Return All Targets Info
 func (m *Energy) Targets() []*proto.TargetTargetInfo {
 	result, err := proto.TargetGetTargets{}.Call(m)
-	utils.E(err)
+	CheckError(err)
 	return result.TargetInfos
 }
 
@@ -157,11 +157,6 @@ func (m *Energy) Targets() []*proto.TargetTargetInfo {
 // For example, window state management or chrome closure requires obtaining window objects and chrome objects directly for use
 func (m *Energy) RodBrowser() *rod.Browser {
 	return m.rodBrowser
-}
-
-// ChromiumBrowser return chromium
-func (m *Energy) ChromiumBrowser() cef.ICEFChromiumBrowser {
-	return m.chromiumBrowser
 }
 
 // BrowserWindow return Window
@@ -198,10 +193,9 @@ func (m *Energy) EachEvent(callbacks ...interface{}) (wait func()) {
 func (m *Energy) CreateBrowser() {
 	if !m.created {
 		m.created = true
-		// chromium
-		if m.chromiumBrowser != nil {
-			m.chromiumBrowser.CreateBrowser()
-		} else if m.window != nil {
+		go m.rodBrowser.Connect()
+		//m.rodBrowser.InitEvents()
+		if m.window != nil {
 			// window
 			if m.window.IsLCL() {
 				cef.RunOnMainThread(func() {
@@ -210,12 +204,13 @@ func (m *Energy) CreateBrowser() {
 			} else {
 				m.window.Show()
 			}
+		} else if m.chromiumBrowser != nil {
+			m.chromiumBrowser.CreateBrowser()
 		}
-		m.rodBrowser.InitEvents()
 	}
 }
 
-// LoadSuccess Returns whether the current page was successfully loaded
+// LoadSuccess Return whether the current page was successfully loaded
 func (m *Energy) LoadSuccess() bool {
 	return m.loadSuccess
 }
@@ -225,8 +220,14 @@ func (m *Energy) PageLoadProcess() float64 {
 	return m.pageLoadProcess
 }
 
+// ChromiumBrowser Return Creating objects for packaged Chromium
+func (m *Energy) ChromiumBrowser() cef.ICEFChromiumBrowser {
+	return m.chromiumBrowser
+}
+
 // Call a method and wait for its response.
 func (m *Energy) Call(ctx context.Context, sessionID, method string, params interface{}) ([]byte, error) {
+	//if m.ChromiumBrowser().IsCreated() {
 	req := &cdp.Request{
 		ID:        int(atomic.AddUint64(&m.count, 1)),
 		SessionID: sessionID,
@@ -250,10 +251,10 @@ func (m *Energy) Call(ctx context.Context, sessionID, method string, params inte
 	})
 	defer m.pending.Delete(req.ID)
 	//m.logger.Println("send-data:", string(data))
-	//fmt.Println("send-data:", req.ID, req.Method, string(data))
+	fmt.Println("send-data:", req.ID, req.Method, string(data))
 	//m.chromium.SendDevToolsMessage(string(data))// Linux cannot be used
 	dict := JSONParse(data)
-	m.chromium.ExecuteDevToolsMethod(int32(req.ID), req.Method, dict)
+	m.ChromiumBrowser().Chromium().ExecuteDevToolsMethod(int32(req.ID), req.Method, dict)
 	defer dict.Free()
 	select {
 	case <-ctx.Done():
@@ -261,6 +262,9 @@ func (m *Energy) Call(ctx context.Context, sessionID, method string, params inte
 	case res := <-done:
 		return res.Msg, res.Err
 	}
+
+	//}
+	//return nil, errors.New("chromium browser has not been created yet")
 }
 
 // Event returns a channel that will emit browser devtools protocol events. Must be consumed or will block producer.
@@ -285,14 +289,14 @@ func (m *Energy) listen() {
 		})
 	} else {
 		// CEF VF window component window close
-		m.chromium.SetOnClose(func(sender lcl.IObject, browser *cef.ICefBrowser, aAction *consts.TCefCloseBrowserAction) {
+		m.ChromiumBrowser().Chromium().SetOnClose(func(sender lcl.IObject, browser *cef.ICefBrowser, aAction *consts.TCefCloseBrowserAction) {
 			if m.onClose != nil {
 				m.onClose(m)
 			}
 		})
 	}
 	// Message reception, using CEF callback function in energy to receive messages
-	m.chromium.SetOnDevToolsRawMessage(func(sender lcl.IObject, browser *cef.ICefBrowser, message uintptr, messageSize uint32) (handled bool) {
+	m.ChromiumBrowser().Chromium().SetOnDevToolsRawMessage(func(sender lcl.IObject, browser *cef.ICefBrowser, message uintptr, messageSize uint32) (handled bool) {
 		handled = true
 		data := ReadData(message, messageSize)
 		if m.onDevToolsRawMessage != nil {
@@ -329,7 +333,7 @@ func (m *Energy) listen() {
 		return
 	})
 	// chromium event, window title bar
-	m.chromium.SetOnTitleChange(func(sender lcl.IObject, browser *cef.ICefBrowser, title string) {
+	m.ChromiumBrowser().Chromium().SetOnTitleChange(func(sender lcl.IObject, browser *cef.ICefBrowser, title string) {
 		if m.window != nil {
 			if m.window.IsLCL() {
 				cef.RunOnMainThread(func() {
@@ -341,7 +345,7 @@ func (m *Energy) listen() {
 		}
 	})
 	// chromium event, page loading
-	m.chromium.SetOnLoadingProgressChange(func(sender lcl.IObject, browser *cef.ICefBrowser, progress float64) {
+	m.ChromiumBrowser().Chromium().SetOnLoadingProgressChange(func(sender lcl.IObject, browser *cef.ICefBrowser, progress float64) {
 		m.pageLoadProcess = progress
 		m.loadSuccess = int(progress*100) == 100
 		if m.onLoadingProgressChange != nil {
@@ -349,11 +353,11 @@ func (m *Energy) listen() {
 		}
 	})
 	// chromium event, popup window
-	m.chromium.SetOnBeforePopup(func(sender lcl.IObject, browser *cef.ICefBrowser, frame *cef.ICefFrame, beforePopupInfo *cef.BeforePopupInfo, popupFeatures *cef.TCefPopupFeatures, windowInfo *cef.TCefWindowInfo, resultClient *cef.ICefClient, settings *cef.TCefBrowserSettings, resultExtraInfo *cef.ICefDictionaryValue, noJavascriptAccess *bool) bool {
+	m.ChromiumBrowser().Chromium().SetOnBeforePopup(func(sender lcl.IObject, browser *cef.ICefBrowser, frame *cef.ICefFrame, beforePopupInfo *cef.BeforePopupInfo, popupFeatures *cef.TCefPopupFeatures, windowInfo *cef.TCefWindowInfo, resultClient *cef.ICefClient, settings *cef.TCefBrowserSettings, resultExtraInfo *cef.ICefDictionaryValue, noJavascriptAccess *bool) bool {
 		if m.onBeforePopup != nil {
 			wp := cef.NewWindowProperty()
 			wp.Url = beforePopupInfo.TargetUrl
-			window := NewEnergyWindow(m.chromium.Config(), wp, nil)
+			window := NewEnergyWindow(m.ChromiumBrowser().Chromium().Config(), wp, nil)
 			cef.RunOnMainThread(func() {
 				window.CreateBrowser()
 				go m.onBeforePopup(window)
@@ -362,7 +366,7 @@ func (m *Energy) listen() {
 		return true
 	})
 	// chromium event, download
-	m.chromium.SetOnBeforeDownload(func(sender lcl.IObject, browser *cef.ICefBrowser, downloadItem *cef.ICefDownloadItem, suggestedName string, callback *cef.ICefBeforeDownloadCallback) {
+	m.ChromiumBrowser().Chromium().SetOnBeforeDownload(func(sender lcl.IObject, browser *cef.ICefBrowser, downloadItem *cef.ICefDownloadItem, suggestedName string, callback *cef.ICefBeforeDownloadCallback) {
 		var (
 			downloadPath = filepath.Join(m.downloadPath, suggestedName)
 			showDialog   = false
