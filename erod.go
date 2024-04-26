@@ -226,18 +226,15 @@ func (m *Energy) ChromiumBrowser() cef.ICEFChromiumBrowser {
 
 // Call a method and wait for its response.
 func (m *Energy) Call(ctx context.Context, sessionID, method string, params interface{}) ([]byte, error) {
-	//if m.ChromiumBrowser().IsCreated() {
 	req := &cdp.Request{
 		ID:        int(atomic.AddUint64(&m.count, 1)),
 		SessionID: sessionID,
 		Method:    method,
 		Params:    params,
 	}
-
 	m.logger.Println(req)
 	data, err := json.Marshal(params)
 	utils.E(err)
-
 	done := make(chan Result)
 	once := sync.Once{}
 	m.pending.Store(req.ID, func(res Result) {
@@ -250,7 +247,6 @@ func (m *Energy) Call(ctx context.Context, sessionID, method string, params inte
 	})
 	defer m.pending.Delete(req.ID)
 	//m.logger.Println("send-data:", string(data))
-	//fmt.Println("send-data:", req.ID, req.Method, string(data))
 	//m.chromium.SendDevToolsMessage(string(data))// Linux cannot be used
 	dict := JSONParse(data)
 	m.ChromiumBrowser().Chromium().ExecuteDevToolsMethod(int32(req.ID), req.Method, dict)
@@ -261,9 +257,6 @@ func (m *Energy) Call(ctx context.Context, sessionID, method string, params inte
 	case res := <-done:
 		return res.Msg, res.Err
 	}
-
-	//}
-	//return nil, errors.New("chromium browser has not been created yet")
 }
 
 // Event returns a channel that will emit browser devtools protocol events. Must be consumed or will block producer.
