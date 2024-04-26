@@ -13,7 +13,6 @@ package erod
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"github.com/energye/energy/v2/cef"
 	"github.com/energye/energy/v2/consts"
 	engJSON "github.com/energye/energy/v2/pkgs/json"
@@ -251,7 +250,7 @@ func (m *Energy) Call(ctx context.Context, sessionID, method string, params inte
 	})
 	defer m.pending.Delete(req.ID)
 	//m.logger.Println("send-data:", string(data))
-	fmt.Println("send-data:", req.ID, req.Method, string(data))
+	//fmt.Println("send-data:", req.ID, req.Method, string(data))
 	//m.chromium.SendDevToolsMessage(string(data))// Linux cannot be used
 	dict := JSONParse(data)
 	m.ChromiumBrowser().Chromium().ExecuteDevToolsMethod(int32(req.ID), req.Method, dict)
