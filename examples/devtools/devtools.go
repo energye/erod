@@ -84,9 +84,10 @@ func main() {
 		})
 		// 仅测试区分测试的功能类型
 		const (
-			testTypeDefault  = 0
-			testTypeUpload   = 1
-			testTypeDownload = 2
+			testTypeDefault    = 0
+			testTypeUpload     = 1
+			testTypeDownload   = 2
+			testTypeScreenshot = 3
 		)
 		// 抓取
 		ipc.On("crawling", func(windowId, testType int) {
@@ -98,6 +99,8 @@ func main() {
 				go crawling.Upload(windowId)
 			} else if testType == testTypeDownload {
 				go crawling.Download(windowId)
+			} else if testType == testTypeScreenshot {
+				go crawling.Screenshot(windowId)
 			}
 		})
 		// 异步IPC监听选项配置

@@ -7,6 +7,7 @@ ipc.on("open-url-process", function (value, windowId) {
 const testTypeDefault = 0
 const testTypeUpload = 1
 const testTypeDownload = 2
+const testTypeScreenshot = 3
 
 $(function () {
     // 默认加载出当前已创建的窗口，例如刷新页面后
@@ -34,6 +35,7 @@ $(function () {
     <button id="show">打开</button>
     <button id="closeWindow">关闭</button>
     <button id="crawling">打开后-测试</button>
+    <button id="screenshot">Screenshot</button>
     <span id="loadProcess"> - </span>
 </div>`
         let row = $(html)
@@ -60,6 +62,14 @@ $(function () {
         // 抓取一些内容
         crawlingBtn.click(function () {
             ipc.emit("crawling", [windowId, type], function (result) {
+                console.log("crawling-result:", result)
+            })
+        })
+        // 截图按钮
+        let screenshot = row.find("#screenshot")
+        // 抓取一些内容
+        screenshot.click(function () {
+            ipc.emit("crawling", [windowId, testTypeScreenshot], function (result) {
                 console.log("crawling-result:", result)
             })
         })

@@ -3,7 +3,7 @@ module github.com/energye/erod
 go 1.19
 
 require (
-	github.com/energye/energy/v2 v2.4.1
+	github.com/energye/energy/v2 v2.4.2
 	github.com/energye/golcl v1.0.10
 	github.com/go-rod/rod v0.116.0
 )

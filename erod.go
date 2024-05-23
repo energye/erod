@@ -246,7 +246,7 @@ func (m *Energy) Call(ctx context.Context, sessionID, method string, params inte
 		})
 	})
 	defer m.pending.Delete(req.ID)
-	//m.logger.Println("send-data:", string(data))
+	m.logger.Println("send-data:", string(data))
 	//m.chromium.SendDevToolsMessage(string(data))// Linux cannot be used
 	dict := JSONParse(data)
 	m.ChromiumBrowser().Chromium().ExecuteDevToolsMethod(int32(req.ID), req.Method, dict)
