@@ -1,11 +1,12 @@
 module github.com/energye/erod
 
-go 1.19
+go 1.20
 
 require (
-	github.com/energye/energy/v2 v2.4.2
-	github.com/energye/golcl v1.0.10
-	github.com/go-rod/rod v0.116.0
+	github.com/energye/energy/v2 v2.4.5
+	github.com/energye/golcl v1.0.12
+	github.com/go-rod/rod v0.116.2
+	github.com/ysmood/gson v0.7.3
 )
 
 require (
@@ -13,8 +14,7 @@ require (
 	github.com/tevino/abool v0.0.0-20220530134649-2bfc934cb23c // indirect
 	github.com/ysmood/fetchup v0.2.3 // indirect
 	github.com/ysmood/goob v0.4.0 // indirect
-	github.com/ysmood/got v0.34.1 // indirect
-	github.com/ysmood/gson v0.7.3 // indirect
-	github.com/ysmood/leakless v0.8.0 // indirect
+	github.com/ysmood/got v0.40.0 // indirect
+	github.com/ysmood/leakless v0.9.0 // indirect
 	golang.org/x/sys v0.12.0 // indirect
 )
