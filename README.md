@@ -1,3 +1,6 @@
+[![Go Reference](https://pkg.go.dev/badge/github.com/energye/erod.svg)](https://pkg.go.dev/github.com/energye/erod)
+[![Discord](https://img.shields.io/discord/1303173966747271209)](https://discord.gg/TejjxKz9)
+
 # 介绍
 
 ERod 是基于 [energy](https://github.com/energye/energy) 和 [rod](https://github.com/go-rod/rod) 封装的 DevTools 协议。 
