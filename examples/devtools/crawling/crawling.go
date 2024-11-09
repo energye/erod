@@ -39,12 +39,14 @@ func WindowIds() (result []*Info) {
 // Create 创建一个浏览器窗口
 func Create(url string, testType int) int {
 	windowId := time.Now().Nanosecond()
-	wp := cef.NewWindowProperty()
-	wp.Url = url // 创建时指定一个URL
-	// 创建一个 energy 扩展 rod 的窗口
-	energyWindow := erod.NewEnergyWindow(nil, wp, nil)
-	windows[windowId] = &WindowInfo{energy: energyWindow, typ: testType}
-	createHandle(windowId, energyWindow)
+	cef.RunOnMainThread(func() {
+		wp := cef.NewWindowProperty()
+		wp.Url = url // 创建时指定一个URL
+		// 创建一个 energy 扩展 rod 的窗口
+		energyWindow := erod.NewEnergyWindow(nil, wp, nil)
+		windows[windowId] = &WindowInfo{energy: energyWindow, typ: testType}
+		createHandle(windowId, energyWindow)
+	})
 	return windowId
 }
 
