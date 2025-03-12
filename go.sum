@@ -1,7 +1,7 @@
-github.com/energye/energy/v2 v2.4.5 h1:l4W8+kn4O8diTCn1/HJlu8xTcsCw20gKIjYGfNDmA/c=
-github.com/energye/energy/v2 v2.4.5/go.mod h1:39y3BjgFmZagQ2OGul+IE3zk0cqXB4uL1NNG9f0Ka/A=
-github.com/energye/golcl v1.0.12 h1:1awoPXs0e/34bbqy3pUzT2qBTGVqrBRv2r3oY5ZNj1s=
-github.com/energye/golcl v1.0.12/go.mod h1:0wCrDx7NnHT5+gylUkKi1a9DKYewmMWZQf7xYyZuq9Y=
+github.com/energye/energy/v2 v2.5.4 h1:Wci2vBwBRBxWmPrN0g0Ra+GuE+5mGC/6pl207Iak1Zw=
+github.com/energye/energy/v2 v2.5.4/go.mod h1:DFBrUQgJK42mkYlRMmew6QOepFr/4wT7aef6la8tQbY=
+github.com/energye/golcl v1.1.2 h1:iyj0TGuj8S/0h9xPSefzA9vRtQYYJwN0LF0/VDfjUB8=
+github.com/energye/golcl v1.1.2/go.mod h1:0wCrDx7NnHT5+gylUkKi1a9DKYewmMWZQf7xYyZuq9Y=
 github.com/go-rod/rod v0.116.2 h1:A5t2Ky2A+5eD/ZJQr1EfsQSe5rms5Xof/qj296e+ZqA=
 github.com/go-rod/rod v0.116.2/go.mod h1:H+CMO9SCNc2TJ2WfrG+pKhITz57uGNYU43qYHh438Mg=
 github.com/godbus/dbus/v5 v5.1.0 h1:4KLkAxT3aOY8Li4FRJe/KvhoNFFxo0m6fNuFUO8QJUk=

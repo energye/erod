@@ -8,6 +8,7 @@ const testTypeDefault = 0
 const testTypeUpload = 1
 const testTypeDownload = 2
 const testTypeScreenshot = 3
+const testIsTrusted = 4
 
 $(function () {
     // 默认加载出当前已创建的窗口，例如刷新页面后
@@ -116,6 +117,14 @@ $(function () {
     $("#download").click(function () {
         ipc.emit("download-file", [testTypeDownload], function (url, windowId) {
             $("#box").append(create(windowId, url, testTypeDownload))
+        })
+    })
+
+    // isTrusted
+
+    $("#isTrusted").click(function () {
+        ipc.emit("isTrusted", [testIsTrusted], function (url, windowId) {
+            $("#box").append(create(windowId, url, testIsTrusted))
         })
     })
 })

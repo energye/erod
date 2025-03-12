@@ -82,12 +82,16 @@ func main() {
 			fmt.Println("javascript-console.log:", message)
 			return false
 		})
+		chromium.SetOnLoadEnd(func(sender lcl.IObject, browser *cef.ICefBrowser, frame *cef.ICefFrame, httpStatusCode int32) {
+
+		})
 		// 仅测试区分测试的功能类型
 		const (
 			testTypeDefault    = 0
 			testTypeUpload     = 1
 			testTypeDownload   = 2
 			testTypeScreenshot = 3
+			testIsTrusted      = 4
 		)
 		// 抓取
 		ipc.On("crawling", func(windowId, testType int) {
@@ -101,6 +105,8 @@ func main() {
 				go crawling.Download(windowId)
 			} else if testType == testTypeScreenshot {
 				go crawling.Screenshot(windowId)
+			} else if testType == testIsTrusted {
+				go crawling.IsTrusted(windowId)
 			}
 		})
 		// 异步IPC监听选项配置
@@ -121,6 +127,12 @@ func main() {
 		// 测试下载文件
 		ipc.On("download-file", func(typ int) (string, int) {
 			url := "http://localhost:22023/download.html"
+			windowId := crawling.Create(url, typ)
+			return url, windowId
+		})
+		// isTrusted
+		ipc.On("isTrusted", func(typ int) (string, int) {
+			url := "https://kaliiiiiiiiii.github.io/brotector"
 			windowId := crawling.Create(url, typ)
 			return url, windowId
 		})

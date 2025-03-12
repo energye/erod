@@ -3,8 +3,8 @@ module github.com/energye/erod
 go 1.20
 
 require (
-	github.com/energye/energy/v2 v2.4.5
-	github.com/energye/golcl v1.0.12
+	github.com/energye/energy/v2 v2.5.4
+	github.com/energye/golcl v1.1.2
 	github.com/go-rod/rod v0.116.2
 	github.com/ysmood/gson v0.7.3
 )

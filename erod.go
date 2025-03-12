@@ -358,7 +358,7 @@ func (m *Energy) listen() {
 		return true
 	})
 	// chromium event, download
-	m.ChromiumBrowser().Chromium().SetOnBeforeDownload(func(sender lcl.IObject, browser *cef.ICefBrowser, downloadItem *cef.ICefDownloadItem, suggestedName string, callback *cef.ICefBeforeDownloadCallback) {
+	m.ChromiumBrowser().Chromium().SetOnBeforeDownload(func(sender lcl.IObject, browser *cef.ICefBrowser, downloadItem *cef.ICefDownloadItem, suggestedName string, callback *cef.ICefBeforeDownloadCallback) bool {
 		var (
 			downloadPath = filepath.Join(m.downloadPath, suggestedName)
 			showDialog   = false
@@ -367,6 +367,7 @@ func (m *Energy) listen() {
 			downloadPath, showDialog = m.onBeforeDownload(suggestedName)
 		}
 		callback.Cont(downloadPath, showDialog)
+		return false
 	})
 }
 
